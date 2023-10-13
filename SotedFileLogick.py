@@ -75,10 +75,11 @@ class FileSorter:
                 self.sort_file(item)
 
 
-if len(sys.argv) < 2:
-    print("Usage: python имя_скрипта.py <путь_к_папке>")
-    sys.exit(1)
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python имя_скрипта.py <путь_к_папке>")
+        sys.exit(1)
 
-path_to_sort = sys.argv[1]
-sorter = FileSorter(path_to_sort)
-sorter.parse()
+    path_to_sort = sys.argv[1]
+    sorter = FileSorter(path_to_sort)
+    sorter.parse()

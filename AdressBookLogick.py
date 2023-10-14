@@ -1,5 +1,5 @@
 from collections import UserDict
-from datetime import datetime
+from datetime import *
 import pickle
 import re
 
@@ -90,18 +90,18 @@ class Record:
         # Повертає рядок, представляючи контакт.
         return f"Contact name: {self.name.value}, phones: {'; '.join(str(p) for p in self.phones)}, email: {self.email}"
 
-    def days_to_birthday(self):
-        if not self.birthday:
-            return -1
-
-        today = datetime.now().date()
-        next_birthday = datetime.strptime(self.birthday.value, "%Y-%m-%d").date().replace(year=today.year)
-        if today > next_birthday:
-            next_birthday = next_birthday.replace(year=today.year + 1)
-
-        days_until_birthday = (next_birthday - today).days
-        return days_until_birthday
-
+    # def days_to_birthday(self):
+    #     if not self.birthday:
+    #         return -1
+    #
+    #     today = datetime.now().date()
+    #     next_birthday = datetime.strptime(self.birthday.value, "%Y-%m-%d").date().replace(year=today.year)
+    #     if today > next_birthday:
+    #         next_birthday = next_birthday.replace(year=today.year + 1)
+    #
+    #     days_until_birthday = (next_birthday - today).days
+    #     return days_until_birthday
+# Коментую код вище, бо він вже, начебто, не потрібен. Замість нього створюю новий код в класі AddressBook
 
 # Клас AddressBook успадкований від UserDict і представляє адресну книгу.
 class AddressBook(UserDict):
@@ -156,6 +156,34 @@ class AddressBook(UserDict):
             self.data = {}
 
 
+
+    def days_to_birthday(self, days_to_filter):
+        today = datetime.now().date()
+        future_date = today + timedelta(days=days_to_filter)
+        upcoming_birthdays = []
+
+        for record in self.data.values():
+            if record.birthday:
+                next_birthday = datetime.strptime(record.birthday.value, "%Y-%m-%d").date().replace(year=today.year)
+                if today <= next_birthday <= future_date:
+                    upcoming_birthdays.append(str(record))
+        print(upcoming_birthdays)
+        return upcoming_birthdays
+
+'''
+Метод days_to_birthday який виводить список контактів, у яких день народження через задану кількість днів
+від поточної дати
+'''
+
+
 if __name__ == "__main__":
     # Створення адресної книги під час запуску скрипта.
     address_book = AddressBook()
+    john_record = Record("John", '2000-10-10')
+    john_record.add_phone("1234567890")
+    john_record.add_phone("5555555555")
+    address_book.add_record(john_record)
+    jane_record = Record("Jane", '2020-10-30')
+    jane_record.add_phone("9876543210")
+    address_book.add_record(jane_record)
+    address_book.days_to_birthday(50)

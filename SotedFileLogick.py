@@ -1,6 +1,7 @@
 import shutil
 from pathlib import Path
-import sys
+import tkinter as tk
+from tkinter import filedialog
 
 
 class FileSorter:
@@ -18,14 +19,14 @@ class FileSorter:
             if folder.name not in self.sorting_folders and folder.is_dir():
                 self._clean_folder(folder)
 
-    def _clean_folder(self, folder):
+    def _clean_folder(self, folder):  # Функция рекурсивной очистки пустых папок
         for item in folder.iterdir():
             if item.is_dir():
                 self._clean_folder(item)
             if not any(folder.iterdir()):
                 folder.rmdir()
 
-    def create_folders(self):
+    def create_folders(self):  # Функция создания папок для сортировки
         for folder in self.sorting_folders:
             folder_path = self.path / folder
             folder_path.mkdir(exist_ok=True)
@@ -75,11 +76,21 @@ class FileSorter:
                 self.sort_file(item)
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python имя_скрипта.py <путь_к_папке>")
-        sys.exit(1)
+def select_and_sort_folder():
+    def select_folder():
+        root = tk.Tk()
+        root.withdraw()  # Скрываем главное окно tkinter
+        folder_selected = filedialog.askdirectory()
+        return folder_selected
 
-    path_to_sort = sys.argv[1]
-    sorter = FileSorter(path_to_sort)
+    folder_selected = select_folder()
+    if not folder_selected:
+        print("Вы не выбрали папку для сортировки. Завершение работы.")
+        return
+
+    sorter = FileSorter(folder_selected)
     sorter.parse()
+
+
+if __name__ == "__main__":
+    select_and_sort_folder()

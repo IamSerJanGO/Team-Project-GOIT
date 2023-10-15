@@ -73,18 +73,54 @@ class Record:
     def __init__(self, name, phone, email=None, address=None, birthday=None):
         self.name = Name(name)
         self.phones = [Phone(phone)]
-        self.email = Email(email) if email else None
+        self.emails = [Email(email)] if email else None
         self.address = Address(address) if address else None
         self.birthday = Birthday(birthday) if birthday else None
+
+    def add_address(self, address):  # Додавання адреса до запису, якщо у записа вже є адрес - викликається помилка
+        if self.address is None:
+            self.address = Address(address)
+        else:
+            raise ValueError("У цього записа вже існує адреса!")
+
+    def remove_address(self):  # Видалення адреса ( повернення до початкового стану як і був, тобто None )
+        self.address = None
+
+    def edit_address(self, old_address, new_address):  # Редагування адреса, якщо такого не існує - викликається помилка
+        if self.address.value == old_address:
+            self.address.value = new_address
+            return
+        else:
+            raise ValueError(f"Address '{old_address}' not found")
+
+    def add_email(self, email):  # Додавання ел.пошти до списку ел.пошт записа
+        self.emails.append(Email(email))
+    def remove_email(self, email):  # Видалення ел.пошти із списка ел.пошт записа, якщо її не знайдено - викликається помилка
+        for e in self.emails:
+            if e.value == email:
+                self.emails.remove(e)
+                return
+        raise ValueError(f"Email '{email}' not found")
+
+    def edit_email(self, old_email,
+                   new_email):  # Редагування ел.пошти, якщо в списку такої немає - викликається помилка
+        for email in self.emails:
+            if email.value == old_email:
+                email.value = new_email
+                return
+        raise ValueError(f"Email '{old_email}' not found")
 
     def add_phone(self, phone):
         self.phones.append(Phone(phone))
 
-    def remove_phone(self, phone):
-        # Видаляємо телефон зі списку, залишаючи всі інші.
-        self.phones = [p for p in self.phones if p.value != phone]
+    def remove_phone(self, phone):  # Видалення тел. номера із списка номерів записа, якщо його не знайдено - викликається помилка
+        for p in self.phones:
+            if p.value == phone:
+                self.phones.remove(p)
+                return
+        raise ValueError(f"Phone number '{phone}' not found")
 
-    def edit_phone(self, old_phone, new_phone):
+    def edit_phone(self, old_phone, new_phone):  # Редагування тел. номера, якщо його не знайдено - викликається помилка
         for phone in self.phones:
             if phone.value == old_phone:
                 phone.value = new_phone
@@ -164,18 +200,19 @@ class AddressBook(UserDict):
         except FileNotFoundError:
             self.data = {}
 
-
     def days_to_birthday(self, days_to_filter):
         today = datetime.now().date()
         future_date = today + timedelta(days=days_to_filter)
         upcoming_birthdays = []
-
         for record in self.data.values():
             if record.birthday:
                 next_birthday = datetime.strptime(record.birthday.value, "%Y-%m-%d").date().replace(year=today.year)
                 if today <= next_birthday <= future_date:
                     upcoming_birthdays.append(str(record))
-        print(upcoming_birthdays)
+        if upcoming_birthdays:
+            print(f'Співпадіння знайдені з такими контактами: {upcoming_birthdays}')
+        else:
+            print("Немає збігів.")
         return upcoming_birthdays
 
 '''
@@ -187,7 +224,10 @@ class AddressBook(UserDict):
 if __name__ == "__main__":
     # Створення адресної книги під час запуску скрипта.
     address_book = AddressBook()
-    john_record = Record("John", '+380676757690')
+    john_record = Record("John", '+380676757690', email='john@gmail.com', address='Kakaya Street', birthday='2020-10-30')
+    john_record.add_email('john222@gmail.com')
+    for i in john_record.emails:
+        print(i)
     john_record.add_phone("+380676757690")
     john_record.add_phone("+378886230216")
     address_book.add_record(john_record)
@@ -195,4 +235,3 @@ if __name__ == "__main__":
     jane_record.add_phone("+378886230216")
     address_book.add_record(jane_record)
     address_book.days_to_birthday(50)
-    print(address_book.find("Jane"))

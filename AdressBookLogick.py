@@ -140,9 +140,19 @@ class Record:
         phones_found = [p for p in self.phones if p.value == phone]
         return phones_found[0] if phones_found else None
 
+    #Виводить всю інформацію про запис
     def __str__(self):
-        # Повертає рядок, представляючи контакт.
-        return f"Contact name: {self.name.value}, phones: {'; '.join(str(p) for p in self.phones)}"
+        attributes = [f"Contact name: {self.name.value}"]
+        phones_str = '; '.join(str(p) for p in self.phones)
+        attributes.append(f"Phones: {phones_str}")
+        if self.emails:
+            emails_str = '; '.join(str(e) for e in self.emails)
+            attributes.append(f"Emails: {emails_str}")
+        if self.address:
+            attributes.append(f'Address: "{self.address.value}"')
+        if self.birthday:
+            attributes.append(f"Birthday: {self.birthday.value}")
+        return ', '.join(attributes)
 
     # def days_to_birthday(self):
     #     if not self.birthday:
@@ -232,7 +242,7 @@ class AddressBook(UserDict):
 if __name__ == "__main__":
     # Створення адресної книги під час запуску скрипта.
     address_book = AddressBook()
-    john_record = Record("John", '+380676757690', email='john@gmail.com', address='Kakaya Street', birthday='2020-10-10')
+    john_record = Record("John", '+380676757690', email='john@gmail.com', address='Kakaya Street')
     john_record.add_email('john222@gmail.com')
     for i in john_record.emails:
         print(i)
@@ -243,3 +253,4 @@ if __name__ == "__main__":
     jane_record.add_phone("+378886230216")
     address_book.add_record(jane_record)
     address_book.days_to_birthday(365)
+    print(john_record)

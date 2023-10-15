@@ -77,33 +77,39 @@ class Record:
         self.address = Address(address) if address else None
         self.birthday = Birthday(birthday) if birthday else None
 
-    def add_address(self, address):  # Додавання адреса до запису, якщо у записа вже є адрес - викликається помилка
+    # Додавання адреса до запису, якщо у записа вже є адрес - викликається помилка
+    def add_address(self, address):
         if self.address is None:
             self.address = Address(address)
         else:
             raise ValueError("У цього записа вже існує адреса!")
 
-    def remove_address(self):  # Видалення адреса ( повернення до початкового стану як і був, тобто None )
+    # Видалення адреса ( повернення до початкового стану як і був, тобто None )
+    def remove_address(self):
         self.address = None
 
-    def edit_address(self, old_address, new_address):  # Редагування адреса, якщо такого не існує - викликається помилка
+    # Редагування адреса, якщо такого не існує - викликається помилка
+    def edit_address(self, old_address, new_address):
         if self.address.value == old_address:
             self.address.value = new_address
             return
         else:
             raise ValueError(f"Address '{old_address}' not found")
 
-    def add_email(self, email):  # Додавання ел.пошти до списку ел.пошт записа
+    # Додавання ел.пошти до списку ел.пошт записа
+    def add_email(self, email):
         self.emails.append(Email(email))
-    def remove_email(self, email):  # Видалення ел.пошти із списка ел.пошт записа, якщо її не знайдено - викликається помилка
+
+    # Видалення ел.пошти із списка ел.пошт записа, якщо її не знайдено - викликається помилка
+    def remove_email(self, email):
         for e in self.emails:
             if e.value == email:
                 self.emails.remove(e)
                 return
         raise ValueError(f"Email '{email}' not found")
 
-    def edit_email(self, old_email,
-                   new_email):  # Редагування ел.пошти, якщо в списку такої немає - викликається помилка
+    # Редагування ел.пошти, якщо в списку такої немає - викликається помилка
+    def edit_email(self, old_email, new_email):
         for email in self.emails:
             if email.value == old_email:
                 email.value = new_email
@@ -113,14 +119,16 @@ class Record:
     def add_phone(self, phone):
         self.phones.append(Phone(phone))
 
-    def remove_phone(self, phone):  # Видалення тел. номера із списка номерів записа, якщо його не знайдено - викликається помилка
+    # Видалення тел. номера із списка номерів записа, якщо його не знайдено - викликається помилка
+    def remove_phone(self, phone):
         for p in self.phones:
             if p.value == phone:
                 self.phones.remove(p)
                 return
         raise ValueError(f"Phone number '{phone}' not found")
 
-    def edit_phone(self, old_phone, new_phone):  # Редагування тел. номера, якщо його не знайдено - викликається помилка
+    # Редагування тел. номера, якщо його не знайдено - викликається помилка
+    def edit_phone(self, old_phone, new_phone):
         for phone in self.phones:
             if phone.value == old_phone:
                 phone.value = new_phone
@@ -147,6 +155,7 @@ class Record:
     #
     #     days_until_birthday = (next_birthday - today).days
     #     return days_until_birthday
+
 
 # Клас AddressBook успадкований від UserDict і представляє адресну книгу.
 class AddressBook(UserDict):
@@ -200,6 +209,8 @@ class AddressBook(UserDict):
         except FileNotFoundError:
             self.data = {}
 
+    #Метод days_to_birthday який виводить список контактів, у яких день народження через задану кількість днів
+    # від поточної дати
     def days_to_birthday(self, days_to_filter):
         today = datetime.now().date()
         future_date = today + timedelta(days=days_to_filter)
@@ -214,12 +225,6 @@ class AddressBook(UserDict):
         else:
             print("Немає збігів.")
         return upcoming_birthdays
-
-'''
-Метод days_to_birthday який виводить список контактів, у яких день народження через задану кількість днів
-від поточної дати
-'''
-
 
 if __name__ == "__main__":
     # Створення адресної книги під час запуску скрипта.

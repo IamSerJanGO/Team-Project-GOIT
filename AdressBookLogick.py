@@ -3,6 +3,9 @@ from datetime import *
 import pickle
 import re
 
+# Перш за все, давайте визначимо власну помилку для некоректного формату номеру телефону.
+class PhoneInvalidFormatError(ValueError):
+    pass
 
 # Базовий клас Field для представлення поля зі значенням.
 class Field:
@@ -12,7 +15,6 @@ class Field:
     def __str__(self):
         return str(self.value)
 
-
 # Клас Name успадкований від Field і представляє ім'я.
 class Name(Field):
     def __init__(self, value):
@@ -20,30 +22,32 @@ class Name(Field):
             raise ValueError("Name cannot be empty")
         super().__init__(value)
 
-
 # Клас Phone успадкований від Field і представляє номер телефону.
 class Phone(Field):
-    @Field.value.setter
+    def __init__(self, value):
+        self.value = value
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
     def value(self, value):
-        if value.startwith('+') and len(value[1:]) == 12 and value[1:].isdigit() or value.isdigit() and len(value) in (
-        10, 12):
+        if (value.startswith('+') and len(value[1:]) == 12 and value[1:].isdigit()) or (value.isdigit() and len(value) in (10, 12)):
             self._value = value
         else:
             raise PhoneInvalidFormatError('Invalid phone format')
 
-
-# Декоратор для перевірки правильності набору мейлу. Поки не знаю де його влупити, тому нехай буде у класі Імейл (37 рядок).
+# Декоратор для перевірки правильності набору мейлу.
 def validate_email(email):
     if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
         raise ValueError("Invalid email format")
-
 
 # Клас Email успадкований від Field і представляє електронну адресу.
 class Email(Field):
     def __init__(self, value):
         validate_email(value)
         super().__init__(value)
-
 
 class Birthday(Field):
 
@@ -56,22 +60,21 @@ class Birthday(Field):
 
 
 class Address(Field):
-
-    def init(self, value):
+    def __init__(self, value):
         words = value.split()
         if len(words) >= 2 and all(len(word) > 3 for word in words):
-            super().init(value)
+            super().__init__(value)
         else:
             raise ValueError('Invalid data format for Address')
 
 
 # Клас Record для представлення контакту в адресній книзі.
 class Record:
-
-    def __init__(self, name, address=None, phone, email, birthday=None):
+    def __init__(self, name, phone, email=None, address=None, birthday=None):
         self.name = Name(name)
         self.phones = [Phone(phone)]
-        self.email = Email(email)
+        self.email = Email(email) if email else None
+        self.address = Address(address) if address else None
         self.birthday = Birthday(birthday) if birthday else None
 
     def add_phone(self, phone):
@@ -95,7 +98,7 @@ class Record:
 
     def __str__(self):
         # Повертає рядок, представляючи контакт.
-        return f"Contact name: {self.name.value}, phones: {'; '.join(str(p) for p in self.phones)}, email: {self.email}"
+        return f"Contact name: {self.name.value}, phones: {'; '.join(str(p) for p in self.phones)}, email: {self.email.value}"
 
     # def days_to_birthday(self):
     #     if not self.birthday:
@@ -108,7 +111,6 @@ class Record:
     #
     #     days_until_birthday = (next_birthday - today).days
     #     return days_until_birthday
-# Коментую код вище, бо він вже, начебто, не потрібен. Замість нього створюю новий код в класі AddressBook
 
 # Клас AddressBook успадкований від UserDict і представляє адресну книгу.
 class AddressBook(UserDict):
@@ -145,8 +147,8 @@ class AddressBook(UserDict):
         results = []
         for record in self.data.values():
             if (
-                    query.lower() in record.name.value.lower() or
-                    any(query.lower() in phone.value for phone in record.phones)
+                query.lower() in record.name.value.lower() or
+                any(query.lower() in phone.value for phone in record.phones)
             ):
                 results.append(record)
         return results
@@ -161,7 +163,6 @@ class AddressBook(UserDict):
                 self.data = pickle.load(file)
         except FileNotFoundError:
             self.data = {}
-
 
 
     def days_to_birthday(self, days_to_filter):
@@ -186,11 +187,12 @@ class AddressBook(UserDict):
 if __name__ == "__main__":
     # Створення адресної книги під час запуску скрипта.
     address_book = AddressBook()
-    john_record = Record("John", '2000-10-10')
-    john_record.add_phone("1234567890")
-    john_record.add_phone("5555555555")
+    john_record = Record("John", '+380676757690')
+    john_record.add_phone("+380676757690")
+    john_record.add_phone("+378886230216")
     address_book.add_record(john_record)
-    jane_record = Record("Jane", '2020-10-30')
-    jane_record.add_phone("9876543210")
+    jane_record = Record("Jane", '+380676757690')
+    jane_record.add_phone("+378886230216")
     address_book.add_record(jane_record)
     address_book.days_to_birthday(50)
+    print(address_book.find("Jane"))

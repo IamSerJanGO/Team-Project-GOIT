@@ -23,10 +23,13 @@ class Name(Field):
 
 # Клас Phone успадкований від Field і представляє номер телефону.
 class Phone(Field):
-    def __init__(self, value):
-        if len(value) != 10 or not value.isdigit():
-            raise ValueError("Phone number must be 10 digits")
-        super().__init__(value)
+    @Field.value.setter
+    def value(self, value):
+        if value.startwith('+') and len(value[1:]) == 12 and value[1:].isdigit() or value.isdigit() and len(value) in (
+        10, 12):
+            self._value = value
+        else:
+            raise PhoneInvalidFormatError('Invalid phone format')
 
 
 # Декоратор для перевірки правильності набору мейлу. Поки не знаю де його влупити, тому нехай буде у класі Імейл (37 рядок).
@@ -54,8 +57,12 @@ class Birthday(Field):
 
 class Address(Field):
 
-    def __init__(self, value):
-        super().__init__(value)
+    def init(self, value):
+        words = value.split()
+        if len(words) >= 2 and all(len(word) > 3 for word in words):
+            super().init(value)
+        else:
+            raise ValueError('Invalid data format for Address')
 
 
 # Клас Record для представлення контакту в адресній книзі.

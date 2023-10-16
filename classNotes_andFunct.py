@@ -21,6 +21,22 @@ class Notes():
         # Зберігаємо час нотаток для подальшого сортування
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+file_path = Path("notes.txt") # Шлях до файлу (для універсального запуску на всіх ОС)
+
+# Функція, яка зберігає данні у файл
+def saving(data):
+    with open("notes.txt", "wb") as fh:
+        dump(data, fh)
+
+# Функція, яка зчитує данні з файлу та повертає їх
+def loading(file_path: Path):
+    try:
+        with file_path.open("rb") as fh:
+            unpacked = load(fh)
+        return unpacked
+    except FileNotFoundError:
+        return {}
+
 #this function save note by function <add>, you add note to the list
 def save_note(list_for_notes, note:Notes):
     dict_for_notes  ={}
@@ -31,27 +47,13 @@ def save_note(list_for_notes, note:Notes):
     dict_for_notes["note"] = note.note
     dict_for_notes["timestamp"] = note.timestamp
     list_for_notes.append(dict_for_notes)
+    saving(list_for_note)
     print (f"Note '{note.note}' with title '{note.title}' has been added.")
 #add note to the list of notes
 def add_note(list_for_notes,node, title):
     new_note = Notes(node, title)
     save_note(list_for_notes, new_note)
 
-# Функція, яка зберігає данні у файл
-def saving(data):
-    with open("saved_notes.txt", "wb") as fh:
-        dump(data, fh)
-
-file_path = Path("saved_notes.txt")
-
-# Функція, яка зчитує данні з файлу та повертає їх
-def loading(file_path: Path):
-    try:
-        with file_path.open("rb") as fh:
-            unpacked = load(fh)
-        return unpacked
-    except FileNotFoundError:
-        return {}
 
 #using this you can search information in all notes
 def search_notes(search_word):

@@ -1,31 +1,62 @@
+from collections import UserList
+from pickle import load, dump
+from datetime import datetime
+from pathlib import Path
+
+#class NoteBook
+class NotesBook(UserList):
+    def add_record(self, notes):
+        self.data.append(notes)
+
 #class Notes
 #you can add tag and key_words
 #also you can sort by tag
 class Notes():
     dict_for_notes = NotesBook()
-    def __init__(self, note, tag = None, key_words = None) -> None:
+    def __init__(self, note, title, tag = None) -> None:
         self.note = note
         self.tag = tag
-        self.key_words = key_words
+        self.title = title
+
+        # Зберігаємо час нотаток для подальшого сортування
+        self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 #this function save note by function <add>, you add note to the list
 def save_note(list_for_notes, note:Notes):
     dict_for_notes  ={}
     if (note.tag is not None ):
         dict_for_notes["tag"] = note.tag
-    if (note.key_words is not None):
-        dict_for_notes["key_words"] = note.key_word
+    if (note.title is not None):
+        dict_for_notes["key_words"] = note.title
     dict_for_notes["note"] = note.note
+    dict_for_notes["timestamp"] = note.timestamp
     list_for_notes.append(dict_for_notes)
-    print (f"Note '{note.note}' with tag '{note.tag}' has been added.")
+    print (f"Note '{note.note}' with title '{note.title}' has been added.")
 #add note to the list of notes
-def add_note(list_for_notes,node):
-    new_note = Notes(node)
+def add_note(list_for_notes,node, title):
+    new_note = Notes(node, title)
     save_note(list_for_notes, new_note)
 
+# Функція, яка зберігає данні у файл
+def saving(data):
+    with open("saved_notes.txt", "wb") as fh:
+        dump(data, fh)
+
+file_path = Path("saved_notes.txt")
+
+# Функція, яка зчитує данні з файлу та повертає їх
+def loading(file_path: Path):
+    try:
+        with file_path.open("rb") as fh:
+            unpacked = load(fh)
+        return unpacked
+    except FileNotFoundError:
+        return {}
+
 #using this you can search information in all notes
-def search_notes(list_for_notes, search_word):
+def search_notes(search_word):
     res = "Notes: \n"
+    list_for_notes = loading(file_path)
     for i in list_for_notes:
         if (search_word in i["note"]):
             res += str(i) + "\n"
@@ -49,36 +80,97 @@ def input_error(func):
 
 #presents all notes
 @input_error
-def show_all_notes(list_for_notes):
+def show_all_notes():
     result = "Notes:\n"
+    list_for_notes = loading(file_path)
     for record in list_for_notes:
         result += str(record) + "\n"
     return result
-    
+
+# Ця функція повністю переписує нотатку за її заголовком
+@input_error
+def edit_note(title, new_text):
+    list_note = loading(file_path)
+    for i in list_note:
+        if title in i['key words']:
+            i['key words']= new_text
+    saving(list_note)
+    return f"The note '{title}' has been changed"
+
+# Виводить індекс нотатку за титлом, для зменшення коду. Викликається в інших функціях
+def find_title(list_note: list, title):
+    for i in list_note:
+        if title in i['key words']:
+            return list_note.index(i)
+
+# Ця функція додає текст до існуючого нотатку
+@input_error
+def add_existing_note(title, new_text):
+    list_note = loading(file_path)
+    list_note[find_title(list_note, title)]['note'] += f" {new_text}"
+    saving(list_note)
+    return f"The '{new_text}' has been added to note with '{title}' title"
+
+# Ця функція видаляє нотатки за заголовком
+@input_error
+def remove_note(title):
+    list_note = loading(file_path)
+    del list_note[find_title(list_note, title)]
+    saving(list_note)
+    return f"The note {title} has been removed."    
+
+# Пошук за тегом
+@input_error
+def search_by_tag(tag):
+    res = "Notes: \n"
+    list_note = loading(file_path)
+    for inner_dict in list_note:
+        if tag in inner_dict["tag"]:
+            res += str(inner_dict) + "\n"
+            return res
+        return f"There is no note with '{tag}' tag"
+
+# Ця функція додає тег до існуючих нотатків
+@input_error
+def add_tag(title, tag):
+    list_note = loading(file_path)
+    list_note[find_title(list_note, title)]["tag"] = tag
+    saving(list_note)
+    return f'The tag "{tag}" has been added to the note "{title}"'
+
+
+# Сортування нотаток за часом збереження
+def sort_notes():
+    notes = loading(file_path)
+    sorted_notes = sorted(notes, key=lambda x: x["timestamp"])
+
+    # Я тут пробувала зробити вивод гарним, але щось не дуже. Спробуй ти, якщо є час
+    table = "\n".join(str(note) for note in sorted_notes)
+    return table
+
 #the main function
 def main():
     #dictionary with the commands
-    phone_book = AddressBook()
     list_for_notes = NotesBook()
     commands = {
         "hello": lambda: print("How can I help you?\n"),
         "good bye": lambda: print("Good bye!"),
         "close": lambda: print("Good bye!"),
         "exit": lambda: print("Good bye!"),
-        "show all": lambda: print(show_all_contacts(phone_book)),
-        "add": lambda: print(add_contact(phone_book,user_devided[1], user_devided[2])) if len(user_devided) == 3 else print_error("write name and phone."),
-        "change": lambda: print(change_phone(phone_book,user_devided[1], user_devided[2], user_devided[3])) if len(user_devided) == 4 else print_error("write name and phone."),
-        "phone": lambda: print(get_phone(phone_book, user_devided[1])) if len(user_devided) == 2 else print_error("write name."),
-        "delete": lambda: print(delete_phone(phone_book,user_devided[1], user_devided[2])) if len(user_devided) == 3 else print_error("write name and phone."),
-        "birth": lambda: print(add_birthday(phone_book, user_devided[1], user_devided[2])) if len(user_devided) == 3 else print_error("write name and birthday"),
-        "days": lambda: print(happy_birthday(phone_book, user_devided[1])) if len(user_devided) == 2 else print_error("write name."),
-        "iteration": lambda: print(iteration_the_func(phone_book, user_devided[1])) if len(user_devided) == 2 else print_error("write number."),
-        "search": lambda: print(search_information(phone_book, user_devided[1])) if len(user_devided) == 2 else print_error("write information."),
-        "send": lambda: send_to_system(phone_book, user_devided[1]) if len(user_devided) == 2 else print_error("write file."),
-        "get": lambda: get_from_system(phone_book, user_devided[1]) if len(user_devided) == 2 else print_error("write file."),
         "note": lambda: (add_note(list_for_notes,note_text)) if len(user_devided) > 1 else print_error("write note."),
         "show note": lambda: print(show_all_notes(list_for_notes)),
         "search note": lambda: print(search_notes(list_for_notes, note_text_search)) if len(user_devided) > 1 else print_error("write search word."),
+        "edit": lambda: print(
+            edit_note(ask_titles(), ask_note())
+        ),  # Переписує текст нотатку на новий
+        "update": lambda: print(
+            add_existing_note(ask_titles(), ask_note())
+        ),  # Додає до існуючого нотатку текст
+        "sort": lambda: print(sort_notes()),  # Сортує за часом написання
+        "add tag": lambda: print(add_tag(ask_titles(), ask_tag())),  # Додає тег
+        "with tag": lambda: print(
+            search_by_tag(note_text_search)
+        ),  # Шукає нотатки за тегом
     }
     while True:
         user_input = input("Write command \t")

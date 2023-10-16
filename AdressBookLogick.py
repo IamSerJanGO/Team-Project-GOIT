@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import pickle
 import re
 
+
 # Перш за все, давайте визначимо власну помилку для некоректного формату номеру телефону.
 class PhoneInvalidFormatError(ValueError):
     pass
@@ -36,10 +37,12 @@ class Phone(Field):
 
     @value.setter
     def value(self, value):
-        if (value.startswith('+') and len(value[1:]) == 12 and value[1:].isdigit()) or (value.isdigit() and len(value) in (10, 12)):
+        if (value.startswith('+') and len(value[1:]) == 12 and value[1:].isdigit()) or (
+                value.isdigit() and len(value) in (10, 12)):
             self._value = value
         else:
             raise PhoneInvalidFormatError('Invalid phone format')
+
 
 # Декоратор для перевірки правильності набору мейлу.
 def validate_email(email):
@@ -145,7 +148,7 @@ class Record:
         phones_found = [p for p in self.phones if p.value == phone]
         return phones_found[0] if phones_found else None
 
-    #Виводить всю інформацію про запис
+    # Виводить всю інформацію про запис
     def __str__(self):
         attributes = [f"Contact name: {self.name.value}"]
         phones_str = '; '.join(str(p) for p in self.phones)
@@ -158,18 +161,6 @@ class Record:
         if self.birthday:
             attributes.append(f"Birthday: {self.birthday.value}")
         return ', '.join(attributes)
-
-    # def days_to_birthday(self):
-    #     if not self.birthday:
-    #         return -1
-    #
-    #     today = datetime.now().date()
-    #     next_birthday = datetime.strptime(self.birthday.value, "%Y-%m-%d").date().replace(year=today.year)
-    #     if today > next_birthday:
-    #         next_birthday = next_birthday.replace(year=today.year + 1)
-    #
-    #     days_until_birthday = (next_birthday - today).days
-    #     return days_until_birthday
 
 
 # Клас AddressBook успадкований від UserDict і представляє адресну книгу.
@@ -207,8 +198,8 @@ class AddressBook(UserDict):
         results = []
         for record in self.data.values():
             if (
-                query.lower() in record.name.value.lower() or
-                any(query.lower() in phone.value for phone in record.phones)
+                    query.lower() in record.name.value.lower() or
+                    any(query.lower() in phone.value for phone in record.phones)
             ):
                 results.append(record)
         return results
@@ -217,6 +208,7 @@ class AddressBook(UserDict):
         with open(filename, 'wb') as file:
             pickle.dump(self.data, file)
 
+    @classmethod
     def load_from_file(self, filename):
         try:
             with open(filename, 'rb') as file:
@@ -224,7 +216,7 @@ class AddressBook(UserDict):
         except FileNotFoundError:
             self.data = {}
 
-    #Метод days_to_birthday який виводить список контактів, у яких день народження через задану кількість днів
+    # Метод days_to_birthday який виводить список контактів, у яких день народження через задану кількість днів
     # від поточної дати
     def days_to_birthday(self, days_to_filter):
         today = datetime.now().date()
@@ -243,10 +235,12 @@ class AddressBook(UserDict):
             print("Немає збігів.")
         return upcoming_birthdays
 
+
 if __name__ == "__main__":
     # Створення адресної книги під час запуску скрипта.
     address_book = AddressBook()
-    john_record = Record("John", '+380676757690', email='john@gmail.com', address='Kakaya Street', birthday='2020-10-25')
+    john_record = Record("John", '+380676757690', email='john@gmail.com', address='Kakaya Street',
+                         birthday='2020-10-25')
     john_record.add_email('john222@gmail.com')
     for i in john_record.emails:
         print(i)

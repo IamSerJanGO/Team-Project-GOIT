@@ -80,7 +80,7 @@ def edit_note(list_for_notes,title, new_text):
     #list_note = loading(file_path)
     for i in list_for_notes:
         if title == i['title']:
-            i['title']= new_text
+            i['note']= new_text
     #saving(list_note)
     return f"The note '{title}' has been changed"
 
@@ -216,7 +216,7 @@ def main():
             print(list_n2[0], list_n2[1])
             commands[note_tag]()
         elif result_text  in commands:
-            if result_text == "note" or result_text == "edit" or result_text == "update":
+            if result_text == "note" or result_text == "edit" or result_text == "update" or result_text == "add tag":
                 list_n = user_input.split("<")
                 list_n2 = list_n[1].split(">")
                 

@@ -2,7 +2,7 @@ from SotedFileLogick import select_and_sort_folder
 from tkinter import simpledialog
 # from tkinter import messagebox
 import tkinter as tk
-from AdressBookLogick import AddressBook, Record, PhoneInvalidFormatError
+from AdressBookLogick import AddressBook, Record, PhoneInvalidFormatError, Phone
 
 
 def get_contact_info(info_type):
@@ -58,6 +58,20 @@ class CommandProcessorApp:
             return self.search_contact()
         elif command == 'delete':
             return self.delete_contact()
+        elif command == 'add phone':
+            return self.add_phone_to_contact()
+        elif command == 'add address':
+            return self.add_address()
+        elif command == 'remove address':
+            return self.remove_address_from_contact()
+        elif command == 'edit address':
+            return self.edit_address()
+        elif command == 'remove phone':
+            return self.remove_phone_in_contact()
+        elif command == 'edit phone':
+            return self.edit_phone_contact()
+        elif command == 'find phone':
+            return self.find_phone_contact()
 
     def find_contact(self):  # Поиск контакта
         contact_name = contact_name_request('Имя')
@@ -96,6 +110,136 @@ class CommandProcessorApp:
         # if contact_name and contact_phone: contact = Record(contact_name, contact_phone, email=contact_mail,
         # address=contact_address, birthday=contact_birthday) self.address_book.add_record(contact) return f'Вы
         # добавили новый контакт: {contact_name} - {contact_phone}'
+
+    def add_phone_to_contact(self):
+        contact_name = simpledialog.askstring("Добавление номера телефона", "Введите имя контакта:")
+        if contact_name:
+            contact = self.address_book.find(contact_name)
+            if contact:
+                phone_number = simpledialog.askstring("Добавление номера телефона", "Введите номер телефона:")
+                try:
+                    Phone(phone_number)
+                    contact.add_phone(phone_number)
+                    # self.error_label.config(text=f'Вы добавили номер телефона для {contact_name}.')
+                    return f'Вы добавили номер телефона {phone_number} для {contact_name}.'
+                except ValueError as e:
+                    self.error_label.config(text=str(e))
+            else:
+                self.error_label.config(text=f'Контакт с именем {contact_name} не найден.')
+        else:
+            self.error_label.config(text='Введите имя контакта.')
+
+    def edit_phone_contact(self):
+        user_input = simpledialog.askstring('Выбор контакта', 'Введите имя контакта:')
+        if user_input:
+            contact = self.address_book.find(user_input)
+            if contact:
+                if contact.phones:
+                    old_phone = simpledialog.askstring('Редактирование телефона', 'Введите старый номер телефона:')
+                    if old_phone:
+                        new_phone = simpledialog.askstring('Редактирование телефона', 'Введите новый номер телефона:')
+                        if new_phone:
+                            try:
+                                # Проверка формата нового номера (вызывает исключение, если формат неверен)
+                                Phone(new_phone)
+                                # Обновление номера у объекта contact
+                                contact.phone.value = new_phone
+                                return f'Вы изменили номер телефона у контакта {contact.name}: {old_phone} -> {new_phone}'
+                            except PhoneInvalidFormatError as e:
+                                self.error_label.config(text=str(e))
+                        else:
+                            self.error_label.config(text='Введите новый номер телефона.')
+                    else:
+                        self.error_label.config(text='Введите старый номер телефона.')
+                else:
+                    self.error_label.config(text=f'{contact} не имеет телефона')
+            else:
+                self.error_label.config(text=f'Контакт {user_input} не найден')
+        else:
+            self.error_label.config(text='Вы не ввели имя контакта.')
+
+    def remove_phone_in_contact(self):
+        contact_name = simpledialog.askstring("Удаление телефона", "Введите имя контакта:")
+        if contact_name:
+            contact = self.address_book.find(contact_name)
+            if contact:
+                removed_phone = simpledialog.askstring("Удаление телефона",
+                                                       f"Введите номер телефона для контакта {contact_name}:")
+                try:
+                    contact.remove_phone(removed_phone)
+                    return f'Вы удалили телефон "{removed_phone}" для контакта "{contact_name}".'
+                except ValueError as e:
+                    self.error_label.config(text=str(e))
+            else:
+                self.error_label.config(text=f'Контакт с именем {contact_name} не найден.')
+        else:
+            self.error_label.config(text='Введите имя контакта.')
+
+    def find_phone_contact(self):
+        user_input = simpledialog.askstring('Поиск номера телефона', 'Введите номер телефона:')
+        if user_input:
+            contact = self.address_book.find_contact_with_phone(user_input)
+            if contact:
+                return f'Найден контакт с номером телефона {user_input}: {contact.name}'
+            else:
+                return f'Контакт с номером телефона {user_input} не найден.'
+        else:
+            self.error_label.config(text='Введите номер телефона.')
+
+    def add_address(self):
+        contact_name = simpledialog.askstring('Добалвение адреса', 'Введите имя контакта:')
+        if contact_name:
+            contact = self.address_book.find(contact_name)
+            if contact:
+                contact_address = simpledialog.askstring('Добалвение адреса', 'Введите адрес:')
+                try:
+                    contact.add_address(contact_address)
+                    return f'Вы добавили адрес {contact_address} для {contact_name}.'
+                except ValueError as e:
+                    self.error_label.config(text=str(e))
+            else:
+                self.error_label.config(text=f'Контакт с именем {contact_name} не найден.')
+        else:
+            self.error_label.config(text='Введите имя контакта.')
+
+    def remove_address_from_contact(self):
+        contact_name = simpledialog.askstring("Удаление адреса", "Введите имя контакта:")
+        if contact_name:
+            contact = self.address_book.find(contact_name)
+            if contact:
+                if contact.address is not None:
+                    removed_address = contact.address.value
+                    contact.remove_address()
+                    return f'Вы удалили адрес "{removed_address}" для контакта "{contact_name}".'
+                else:
+                    self.error_label.config(text=f'{contact_name} не имеет адреса.')
+            else:
+                self.error_label.config(text=f'Контакт с именем {contact_name} не найден.')
+        else:
+            self.error_label.config(text='Введите имя контакта.')
+
+    def edit_address(self):
+        user_input = simpledialog.askstring('Выбор каогтакта', 'Введите имя контакте:')
+        if user_input:
+            contact = self.address_book.find(user_input)
+            if contact:
+                if contact.address:
+                    old_address = simpledialog.askstring('Редактирование адреса', 'Введите старый адрес:')
+                    new_address = simpledialog.askstring('Редактирование адреса', 'Введите новый адрес:')
+                    if old_address and new_address:
+                        try:
+                            contact.edit_address(old_address, new_address)
+                            return f'Вы изменили адрес у контакта {contact.name}: {old_address} -> {new_address}'
+                        except ValueError as e:
+                            self.error_label.config(text=str(e))
+                    else:
+                        self.error_label.config(text=f'Пожалуйста, введите и старый адрес, и новый адрес.')
+                else:
+                    self.error_label.config(text=f'{contact} не имеет адреса')
+            else:
+                self.error_label.config(text=f'Контакт {contact} не найден')
+        else:
+            self.error_label.config(text='Вы не ввели контакт для адреса')
 
     def delete_contact(self):
         user_input = simpledialog.askstring('Удаление контакта', 'Введите имя контакта для удаления:')

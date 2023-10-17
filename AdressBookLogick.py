@@ -182,6 +182,12 @@ class AddressBook(UserDict):
             del self.data[name]
             return f'{name}'
 
+    # def find_contact_with_phone(self, phone):
+    #     for contact in self.data.values():
+    #         if contact.find_phone(phone):
+    #             return contact
+    #     return None
+
     def __iter__(self):
         self.current_record = 0
         self.records = list(self.data.values())
@@ -208,7 +214,6 @@ class AddressBook(UserDict):
     def save_to_file(self, filename):
         with open(filename, 'wb') as file:
             pickle.dump(self.data, file)
-
 
     def load_from_file(self, filename):
         try:

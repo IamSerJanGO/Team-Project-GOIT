@@ -7,19 +7,12 @@ from tkinter import filedialog
 class FileSorter:
     def __init__(self, path):
         self.path = Path(path)
-        self.images_tuple = (".jpeg", ".png", ".jpg", ".svg")
-        self.video_tuple = (".avi", ".mp4", ".mov", ".mkv")
-        self.document_tuple = (".doc", ".docx", ".txt", ".pdf", ".xlsx", ".pptx")
-        self.audio_tuple = (".mp3", ".ogg", ".wav", ".amr")
-        self.archive_tuple = (".zip", ".gz", ".tar")
-        self.sorting_folders = (
-            "archives",
-            "video",
-            "audio",
-            "documents",
-            "images",
-            "unknown type",
-        )
+        self.images_tuple = ('.jpeg', '.png', '.jpg', '.svg')
+        self.video_tuple = ('.avi', '.mp4', '.mov', '.mkv')
+        self.document_tuple = ('.doc', '.docx', '.txt', '.pdf', '.xlsx', '.pptx')
+        self.audio_tuple = ('.mp3', '.ogg', '.wav', '.amr')
+        self.archive_tuple = ('.zip', '.gz', '.tar')
+        self.sorting_folders = ('archives', 'video', 'audio', 'documents', 'images', 'unknown type')
 
     def clean_folders(self):
         for folder in self.path.iterdir():
@@ -39,38 +32,36 @@ class FileSorter:
             folder_path.mkdir(exist_ok=True)
 
     def dearchive(self, file_name):
-        path_to_unpack = self.path / "archives"
+        path_to_unpack = self.path / 'archives'
         folder_path = path_to_unpack / file_name.stem
         folder_path.mkdir(exist_ok=True)
-        if file_name.suffix == ".zip":
-            shutil.unpack_archive(file_name, folder_path, format="zip")
-        elif file_name.suffix == ".tar":
-            shutil.unpack_archive(file_name, folder_path, format="tar")
-        elif file_name.suffix == ".gz":
-            shutil.unpack_archive(file_name, folder_path, format="gz")
+        if file_name.suffix == '.zip':
+            shutil.unpack_archive(file_name, folder_path, format='zip')
+        elif file_name.suffix == '.tar':
+            shutil.unpack_archive(file_name, folder_path, format='tar')
+        elif file_name.suffix == '.gz':
+            shutil.unpack_archive(file_name, folder_path, format='gz')
 
     def sort_file(self, file_name):
         if file_name.suffix in self.document_tuple:
-            self._move_file(file_name, "documents")
+            self._move_file(file_name, 'documents')
         elif file_name.suffix in self.images_tuple:
-            self._move_file(file_name, "images")
+            self._move_file(file_name, 'images')
         elif file_name.suffix in self.video_tuple:
-            self._move_file(file_name, "video")
+            self._move_file(file_name, 'video')
         elif file_name.suffix in self.audio_tuple:
-            self._move_file(file_name, "audio")
+            self._move_file(file_name, 'audio')
         elif file_name.suffix in self.archive_tuple:
             self.dearchive(file_name)
         else:
-            self._move_file(file_name, "unknown type")
+            self._move_file(file_name, 'unknown type')
 
     def _move_file(self, file_name, folder_name):
         target_folder = self.path / folder_name
         try:
             shutil.move(str(file_name), target_folder)
         except PermissionError:
-            print(
-                f"Ошибка при перемещении файла, скорее всего файл {file_name.name} - открыт !!!"
-            )
+            print(f'Ошибка при перемещении файла, скорее всего файл {file_name.name} - открыт !!!')
 
     def parse(self):
         self.create_folders()

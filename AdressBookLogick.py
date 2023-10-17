@@ -180,6 +180,7 @@ class AddressBook(UserDict):
         # Видалення контакту з адресної книги за ім'ям.
         if name in self.data:
             del self.data[name]
+            return f'{name}'
 
     def __iter__(self):
         self.current_record = 0
@@ -208,7 +209,7 @@ class AddressBook(UserDict):
         with open(filename, 'wb') as file:
             pickle.dump(self.data, file)
 
-    @classmethod
+
     def load_from_file(self, filename):
         try:
             with open(filename, 'rb') as file:

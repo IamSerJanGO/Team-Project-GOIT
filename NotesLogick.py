@@ -100,7 +100,9 @@ def add_existing_note(list_for_notes,title, new_text):
 # Ця функція видаляє нотатки за заголовком
 @input_error
 def remove_note(list_for_notes, title):
-    del list_for_notes[find_title(list_for_notes, title)]
+    for i in list_for_notes:
+        if title in i["title"]:
+            list_for_notes.remove(i)
     return f"The note {title} has been removed."
 
 # Пошук за тегом оновлено

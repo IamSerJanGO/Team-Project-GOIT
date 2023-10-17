@@ -1,16 +1,14 @@
 from collections import UserList
 from pickle import load, dump
 from datetime import datetime
-from pathlib import Path
+#from pathlib import Path
 
-#class NoteBook
+#class NoteBook - список, що зберігає словники нотатків
 class NotesBook(UserList):
     def add_record(self, notes):
         self.data.append(notes)
 
-#class Notes
-#you can add tag and key_words
-#also you can sort by tag
+#class Notes - створює нотатки
 class Notes():
     dict_for_notes = NotesBook()
     def __init__(self, note, title, tag = None) -> None:
@@ -21,13 +19,7 @@ class Notes():
         # Зберігаємо час нотаток для подальшого сортування
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-file_path = Path("notes.txt") # Шлях до файлу (для універсального запуску на всіх ОС)
-#Я не використовувала
-
-# Функція, яка зберігає данні у файл
-# випадково видалила , не використовувала
-
-#this function save note by function <add>, you add note to the list
+# Додає нотатки до списку за функцією <add>
 def save_note(list_for_notes, note:Notes):
     dict_for_notes  ={}
     if (note.tag is not None ):
@@ -40,13 +32,13 @@ def save_note(list_for_notes, note:Notes):
     #saving(list_for_notes)
     print (f"Note '{note.note}' with title '{note.title}' has been added.")
 
-#add note to the list of notes
+# Додає нотатки до списку
 def add_note(list_for_notes,node, title):
     new_note = Notes(node, title)
     save_note(list_for_notes, new_note)
 
 
-#using this you can search information in all notes
+# Знаходить нотатки за рандомними словами
 def search_notes(list_for_notes,search_word):
     res = "Notes: \n"
     #list_for_notes = loading(file_path)
@@ -55,10 +47,11 @@ def search_notes(list_for_notes,search_word):
             res += str(i) + "\n"
     return res
 
-#write error
+# Пише помилки
 def print_error(message):
     print("Error: " , message)
-#generate the errors
+
+# Декоратор для помилок
 def input_error(func):
     def inner(*args, **kwargs):
         try:
@@ -71,7 +64,7 @@ def input_error(func):
             return "Error: Invalid input. Please enter name and phone number."
     return inner
 
-#presents all notes
+# Показує всі нотатки
 @input_error
 def show_all_notes(list_for_notes):
     result = "Notes:\n"
@@ -81,7 +74,7 @@ def show_all_notes(list_for_notes):
     return result
 
 # Ця функція повністю переписує нотатку за її заголовком
-# Трішки змінали для покращення працездатності
+# Трішки змінила для покращення працездатності
 @input_error
 def edit_note(list_for_notes,title, new_text):
     #list_note = loading(file_path)
@@ -94,7 +87,7 @@ def edit_note(list_for_notes,title, new_text):
 # Виводить індекс нотатку за титлом, для зменшення коду. Викликається в інших функціях
 def find_title(list_note: list, title):
     for i in list_note:
-        if title in i['title']:
+        if title == i['title']:
             return list_note.index(i)
 
 # Ця функція додає текст до існуючого нотатку
@@ -107,8 +100,8 @@ def add_existing_note(list_for_notes,title, new_text):
 
 # Ця функція видаляє нотатки за заголовком
 @input_error
-def remove_note(title):
-    del list_note[find_title(list_note, title)]
+def remove_note(list_for_notes, title):
+    del list_for_notes[find_title(list_for_notes, title)]
     return f"The note {title} has been removed."
 
 # Пошук за тегом оновлено
@@ -142,12 +135,13 @@ def sort_notes(list_for_notes):
     return result
    
 
-#write information в файл
+# Зберігає інформацію в файл
 def send_to_system(list_for_notes, filename):
     with open(filename, "wb") as f:
         for record in list_for_notes:
             dump(record, f)
-#read information з файлу
+
+# Зчитує інфу з файлу
 def get_from_system(list_for_notes, filename):
    with open(filename, "rb") as f:
         while True:
@@ -158,9 +152,9 @@ def get_from_system(list_for_notes, filename):
                 break
 
 
-#the main function
+# Головна функція
 def main():
-    #dictionary with the commands
+    #Словник команд
     list_for_notes = NotesBook()
     commands = {
         "hello": lambda: print("How can I help you?\n"),
@@ -183,7 +177,8 @@ def main():
         ),  # Шукає нотатки за тегом
         #"saving": lambda:print(saving()),
         "send": lambda: print(send_to_system(list_for_notes, user_devided[1])),
-        "get": lambda: print(get_from_system(list_for_notes, user_devided[1]))
+        "get": lambda: print(get_from_system(list_for_notes, user_devided[1])),
+        "remove": lambda: print(remove_note(list_for_notes, note_text_search)) 
     }
     while True:
         user_input = input("Write command \t")

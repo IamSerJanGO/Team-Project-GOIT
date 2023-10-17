@@ -37,12 +37,11 @@ class Phone(Field):
 
     @value.setter
     def value(self, value):
-        if (value.startswith("+") and len(value[1:]) == 12 and value[1:].isdigit()) or (
-            value.isdigit() and len(value) in (10, 12)
-        ):
+        if (value.startswith('+') and len(value[1:]) == 12 and value[1:].isdigit()) or (
+                value.isdigit() and len(value) in (10, 12)):
             self._value = value
         else:
-            raise PhoneInvalidFormatError("Invalid phone format")
+            raise PhoneInvalidFormatError('Invalid phone format')
 
 
 # Декоратор для перевірки правильності набору мейлу.
@@ -59,6 +58,7 @@ class Email(Field):
 
 
 class Birthday(Field):
+
     def __init__(self, value):
         try:
             datetime.strptime(value, "%Y-%m-%d")
@@ -73,7 +73,7 @@ class Address(Field):
         if len(words) >= 2 and all(len(word) > 3 for word in words):
             super().__init__(value)
         else:
-            raise ValueError("Invalid data format for Address")
+            raise ValueError('Invalid data format for Address')
 
 
 # Клас Record для представлення контакту в адресній книзі.
@@ -151,16 +151,16 @@ class Record:
     # Виводить всю інформацію про запис
     def __str__(self):
         attributes = [f"Contact name: {self.name.value}"]
-        phones_str = "; ".join(str(p) for p in self.phones)
+        phones_str = '; '.join(str(p) for p in self.phones)
         attributes.append(f"Phones: {phones_str}")
         if self.emails:
-            emails_str = "; ".join(str(e) for e in self.emails)
+            emails_str = '; '.join(str(e) for e in self.emails)
             attributes.append(f"Emails: {emails_str}")
         if self.address:
             attributes.append(f'Address: "{self.address.value}"')
         if self.birthday:
             attributes.append(f"Birthday: {self.birthday.value}")
-        return ", ".join(attributes)
+        return ', '.join(attributes)
 
 
 # Клас AddressBook успадкований від UserDict і представляє адресну книгу.
@@ -180,7 +180,7 @@ class AddressBook(UserDict):
         # Видалення контакту з адресної книги за ім'ям.
         if name in self.data:
             del self.data[name]
-            return f"{name}"
+            return f'{name}'
 
     # def find_contact_with_phone(self, phone):
     #     for contact in self.data.values():
@@ -204,19 +204,20 @@ class AddressBook(UserDict):
     def search(self, query):
         results = []
         for record in self.data.values():
-            if query.lower() in record.name.value.lower() or any(
-                query.lower() in phone.value for phone in record.phones
+            if (
+                    query.lower() in record.name.value.lower() or
+                    any(query.lower() in phone.value for phone in record.phones)
             ):
                 results.append(record)
         return results
 
     def save_to_file(self, filename):
-        with open(filename, "wb") as file:
+        with open(filename, 'wb') as file:
             pickle.dump(self.data, file)
 
     def load_from_file(self, filename):
         try:
-            with open(filename, "rb") as file:
+            with open(filename, 'rb') as file:
                 self.data = pickle.load(file)
         except FileNotFoundError:
             self.data = {}
@@ -229,17 +230,13 @@ class AddressBook(UserDict):
         upcoming_birthdays = []
         for record in self.data.values():
             if record.birthday:
-                next_birthday = (
-                    datetime.strptime(record.birthday.value, "%Y-%m-%d")
-                    .date()
-                    .replace(year=today.year)
-                )
+                next_birthday = datetime.strptime(record.birthday.value, "%Y-%m-%d").date().replace(year=today.year)
                 if today > next_birthday:
                     next_birthday = next_birthday.replace(year=today.year + 1)
                 if today <= next_birthday <= future_date:
                     upcoming_birthdays.append(str(record))
         if upcoming_birthdays:
-            print(f"Співпадіння знайдені з такими контактами: {upcoming_birthdays}")
+            print(f'Співпадіння знайдені з такими контактами: {upcoming_birthdays}')
         else:
             print("Немає збігів.")
         return upcoming_birthdays
@@ -248,20 +245,15 @@ class AddressBook(UserDict):
 if __name__ == "__main__":
     # Створення адресної книги під час запуску скрипта.
     address_book = AddressBook()
-    john_record = Record(
-        "John",
-        "+380676757690",
-        email="john@gmail.com",
-        address="Kakaya Street",
-        birthday="2020-10-25",
-    )
-    john_record.add_email("john222@gmail.com")
+    john_record = Record("John", '+380676757690', email='john@gmail.com', address='Kakaya Street',
+                         birthday='2020-10-25')
+    john_record.add_email('john222@gmail.com')
     for i in john_record.emails:
         print(i)
     john_record.add_phone("+380676757690")
     john_record.add_phone("+378886230216")
     address_book.add_record(john_record)
-    jane_record = Record("Jane", "+380676757690")
+    jane_record = Record("Jane", '+380676757690')
     jane_record.add_phone("+378886230216")
     address_book.add_record(jane_record)
     address_book.days_to_birthday(10)

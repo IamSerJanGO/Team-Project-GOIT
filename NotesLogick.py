@@ -24,8 +24,7 @@ def save_note(list_for_notes, note:Notes):
     dict_for_notes  ={}
     if (note.tag is not None ):
         dict_for_notes["tag"] = note.tag
-    if (note.title is not None):
-        dict_for_notes["title"] = note.title
+    dict_for_notes["title"] = note.title
     dict_for_notes["note"] = note.note
     dict_for_notes["timestamp"] = note.timestamp
     list_for_notes.append(dict_for_notes)
@@ -227,7 +226,7 @@ def main():
                 break
         else:
             print(
-                "Invalid command. Use 'hello', 'note', 'edit', 'update', 'show note', 'good bye', 'close', 'with tag', 'sort', 'add tag', 'search note' or 'exit'"
+                "Invalid command. Use 'hello', 'note', 'edit', 'update', 'show note', 'good bye', 'close', 'with tag', 'sort', 'remove', 'add tag', 'search note' or 'exit'"
             )
 
 

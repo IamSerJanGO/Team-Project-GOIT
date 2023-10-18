@@ -21,39 +21,124 @@ def contact_name_request(name):
 
 class CommandProcessorApp:
     def __init__(
-        self, app, address_book, notes_book
+            self, app, address_book, notes_book
     ):  # Добавила список заметок как аргумент в класс
         self.app = app
         self.address_book = address_book
         self.notes_book = notes_book
-        self.app.geometry("300x200")
+        self.app.geometry("500x500")
         self.app.configure(bg="#F5F5DC")
         self.app.title("Твой помошник 😊")
 
         # Создание метки для инструкций пользователя
+        commands = [
+            "add",
+            "find contact",
+            "check birthday",
+            "search",
+            "delete",
+            "add phone",
+            "add address",
+            "remove address",
+            "edit address",
+            "remove phone",
+            "edit phone",
+            "find phone",
+            "add email",
+            "edit email",
+            "remove email",
+            "note",
+            "search note",
+            "edit note",
+            "update note",
+            "add tag",
+            "with tag",
+            "sort note",
+            "remove note",
+            "show note",
+        ]
+
+        descriptions = [
+            "Добавить контакт",
+            "Найти контакт по имени",
+            "Проверить день рождения",
+            "Поиск",
+            "Удалить контакт",
+            "Добавить телефон",
+            "Добавить адрес",
+            "Удалить адрес",
+            "Редактировать адрес",
+            "Удалить телефон",
+            "Редактировать телефон",
+            "Найти телефон",
+            "Добавить почту",
+            "Редактировать почту",
+            "Удалить почту",
+            "Добавить заметку",
+            "Поиск заметки",
+            "Редактировать заметку",
+            "Обновить заметку",
+            "Добавить тег к заметке",
+            "Отобразить заметки с тегом",
+            "Сортировать заметки",
+            "Удалить заметку",
+            "Показать заметку",
+        ]
+
+        # Создаем метку для перечня команд
+        commands_label = tk.Label(
+            app,
+            text="Список команд:",
+            background="#F5F5DC",
+            justify="left"
+        )
+        commands_label.pack()
+
+        # Создаем текстовое поле для перечня команд и описаний
+        commands_text = tk.Text(
+            app,
+            wrap="word",
+            height=10,
+            width=40,
+            background="#F5F5DC"
+        )
+        commands_text.pack()
+
+        # Вставляем команды и описания в текстовое поле
+        for command, description in zip(commands, descriptions):
+            commands_text.insert(tk.END, f"{command} - {description}\n")
+
+        # Создаем метку для ввода команды
         self.input_label = tk.Label(
-            app, text="Введите команду:\nспсиок команд", background="#F5F5DC"
+            app,
+            text="Введите команду:",
+            background="#F5F5DC"
         )
         self.input_label.pack()
 
-        # Создание виджета ввода для пользователя
+        # Создаем виджет ввода для пользователя
         self.input_entry = tk.Entry(app)
         self.input_entry.pack()
 
-        # Создание кнопки "Выполнить" и привязка ее к функции execute_command
+        # Создаем кнопку "Выполнить" и привязываем ее к функции execute_command
         self.submit_button = tk.Button(
-            app, text="Выполнить", command=self.execute_command
+            app,
+            text="Выполнить",
+            command=self.execute_command
         )
         self.submit_button.pack()
 
-        # Создание метки для вывода результата
+        # Создаем метку для вывода результата
         self.result_label = tk.Label(app, text="")
         self.result_label.pack()
 
         self.app.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.error_label = tk.Label(
-            self.app, text="", foreground="red", background="#F5F5DC"
+            self.app,
+            text="",
+            foreground="red",
+            background="#F5F5DC"
         )
         self.error_label.pack()
 
@@ -244,16 +329,12 @@ class CommandProcessorApp:
             self.error_label.config(text="Введите имя контакта.")
 
     def add_contact(self):
-        contact_name = simpledialog.askstring(
-            "Добавление контакта", "Введите имя контакта:"
-        )
-        contact_phone = simpledialog.askstring(
-            "Добавление контакта", "Введите номер контакта:"
-        )
+        contact_name = simpledialog.askstring("Добавление контакта", "Введите имя контакта:")
+        contact_phone = simpledialog.askstring("Добавление контакта", "Введите номер контакта:")
 
         # Проверка формата номера телефона
         try:
-            phone_instance = Phone(contact_phone)
+            Phone(contact_phone)  # Если прошло проверку формата, ничего не произойдет
         except ValueError as e:
             self.error_label.config(text=str(e))
             return
@@ -261,27 +342,24 @@ class CommandProcessorApp:
         contact_mail = get_contact_info("почту контакта")
 
         # Проверка формата email
-        try:
-            email_instance = Email(contact_mail)
-        except ValueError as e:
-            self.error_label.config(text=str(e))
-            return
+        if contact_mail is not None:  # Пользователь ввел email или нажал Отмена
+            try:
+                Email(contact_mail)  # Если прошло проверку формата, ничего не произойдет
+            except ValueError as e:
+                self.error_label.config(text=str(e))
+                return
+        else:
+            contact_mail = None
 
         contact_address = get_contact_info("адрес контакта")
         contact_birthday = get_contact_info("день рождения контакта")
 
-        contact = Record(
-            contact_name,
-            phone_instance,
-            email=email_instance,
-            address=contact_address,
-            birthday=contact_birthday,
-        )
+        contact = Record(contact_name, contact_phone, email=contact_mail, address=contact_address,
+                         birthday=contact_birthday)
 
         self.address_book.add_record(contact)
 
-        self.error_label.config(text="")
-        return f"Вы добавили новый контакт: {contact_name} - {contact_phone}"
+        return f'Вы добавили новый контакт: {contact_name} - {contact_phone}'
 
         # if contact_name and contact_phone: contact = Record(contact_name, contact_phone, email=contact_mail,
         # address=contact_address, birthday=contact_birthday) self.address_book.add_record(contact) return f'Вы

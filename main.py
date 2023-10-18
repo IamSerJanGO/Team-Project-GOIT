@@ -2,7 +2,7 @@ from SotedFileLogick import select_and_sort_folder
 from tkinter import simpledialog
 # from tkinter import messagebox
 import tkinter as tk
-from AdressBookLogick import AddressBook, Record, PhoneInvalidFormatError, Phone
+from AdressBookLogick import AddressBook, Record, Phone, Email
 
 
 def get_contact_info(info_type):
@@ -72,6 +72,8 @@ class CommandProcessorApp:
             return self.edit_phone_contact()
         elif command == 'find phone':
             return self.find_phone_contact()
+        elif command == 'add email':
+            return self.add_email()
 
     def find_contact(self):  # Поиск контакта
         contact_name = contact_name_request('Имя')
@@ -84,7 +86,25 @@ class CommandProcessorApp:
                 self.error_label.config(text=f'Контакт с именем {contact_name} не найден')
         except ValueError as e:
             self.error_label.config(text=str(e))
-        return ""
+
+    def add_email(self):
+        contact_name = simpledialog.askstring('Добавление почтового ящика', 'Введите имя контакта:')
+        if contact_name:
+            contact = self.address_book.find(contact_name)
+            if contact:
+                new_email = simpledialog.askstring('Добавление почтового ящика', 'Введите новый почтовый адрес:')
+                if new_email:
+                    try:
+                        contact.add_email(new_email)  # Создаем экземпляр Email и добавляем его к контакту
+                        return f'Вы добавили почтовый адрес {new_email} для {contact}.'
+                    except ValueError as e:
+                        self.error_label.config(text=str(e))
+                else:
+                    self.error_label.config(text='Вы не ввели новый почтовый адрес.')
+            else:
+                self.error_label.config(text=f'Контакт с именем {contact_name} не найден.')
+        else:
+            self.error_label.config(text='Вы не ввели имя контакта.')
 
     def add_contact(self):  # Добовляем контакт
         contact_name = simpledialog.askstring("Добавление контакта", "Введите имя контакта:")
@@ -98,7 +118,7 @@ class CommandProcessorApp:
             contact = Record(contact_name, contact_phone, email=contact_mail, address=contact_address,
                              birthday=contact_birthday)
             self.address_book.add_record(contact)
-        except PhoneInvalidFormatError:
+        except ValueError:
             self.error_label.config(text="Invalid phone number.")
             return
         except ValueError as e:
@@ -145,7 +165,7 @@ class CommandProcessorApp:
                                 # Обновление номера у объекта contact
                                 contact.phone.value = new_phone
                                 return f'Вы изменили номер телефона у контакта {contact.name}: {old_phone} -> {new_phone}'
-                            except PhoneInvalidFormatError as e:
+                            except ValueError as e:
                                 self.error_label.config(text=str(e))
                         else:
                             self.error_label.config(text='Введите новый номер телефона.')

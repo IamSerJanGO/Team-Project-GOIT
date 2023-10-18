@@ -95,7 +95,7 @@ class Record:
     def __init__(self, name, phone, email=None, address=None, birthday=None):
         self.name = Name(name)
         self.phones = [Phone(phone)]
-        self.emails = [Email(email)] if email else None
+        self.emails = [] if email is None else [Email(email)]
         self.address = Address(address) if address else None
         self.birthday = Birthday(birthday) if birthday else None
 
@@ -120,6 +120,8 @@ class Record:
 
     # Додавання ел.пошти до списку ел.пошт записа
     def add_email(self, email):
+        if self.emails is None:
+            self.emails = []
         self.emails.append(Email(email))
 
     # Видалення ел.пошти із списка ел.пошт записа, якщо її не знайдено - викликається помилка
@@ -194,11 +196,11 @@ class AddressBook(UserDict):
             del self.data[name]
             return f'{name}'
 
-    # def find_contact_with_phone(self, phone):
-    #     for contact in self.data.values():
-    #         if contact.find_phone(phone):
-    #             return contact
-    #     return None
+    def find_contact_with_phone(self, phone):
+        for contact in self.data.values():
+            if contact.find_phone(phone):
+                return contact
+        return None
 
     def __iter__(self):
         self.current_record = 0

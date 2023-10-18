@@ -34,7 +34,7 @@ def save_note(list_for_notes, note: Notes):
     dict_for_notes["timestamp"] = note.timestamp
     list_for_notes.append(dict_for_notes)
     # saving(list_for_notes)
-    print(f"Note '{note.note}' with title '{note.title}' has been added.")
+    print(f"Нотатка '{note.note}' з заголовком '{note.title}' додана.")
 
 
 # Додає нотатки до списку
@@ -45,7 +45,7 @@ def add_note(list_for_notes, node, title):
 
 # Знаходить нотатки за рандомними словами
 def search_notes(list_for_notes, search_word):
-    res = "Notes: \n"
+    res = "Нотатки: \n"
     # list_for_notes = loading(file_path)
     for i in list_for_notes:
         if search_word in i["note"]:
@@ -64,13 +64,13 @@ def input_error(func):
         try:
             return func(*args, **kwargs)
         except KeyError:
-            return "Error: Note not found."
+            return "Помилка введення."
         except ValueError:
-            return "Error: Invalid input. Please enter title and note."
+            return "Помилка введення."
         except IndexError:
-            return "Error: Invalid input. Please enter title and note."
+            return "Помилка введення."
         except TypeError:
-            return "There is no note with such title"
+            return "Немає нотатків з даним заголовком"
 
     return inner
 
@@ -78,7 +78,7 @@ def input_error(func):
 # Показує всі нотатки
 @input_error
 def show_all_notes(list_for_notes):
-    result = "Notes:\n"
+    result = "Нотатки:\n"
     # list_for_note= loading(file_path)
     for record in list_for_notes:
         result += str(record) + "\n"
@@ -94,7 +94,7 @@ def edit_note(list_for_notes, title, new_text):
         if title == i["title"]:
             i["note"] = new_text
     # saving(list_note)
-    return f"The note '{title}' has been changed"
+    return f"Нотатка '{title}' змінена"
 
 
 # Виводить індекс нотатку за титлом, для зменшення коду. Викликається в інших функціях
@@ -110,7 +110,7 @@ def add_existing_note(list_for_notes, title, new_text):
     # list_note = loading(file_path)
     list_for_notes[find_title(list_for_notes, title)]["note"] += f" {new_text}"
     # saving(list_note)
-    return f"The '{new_text}' has been added to note with '{title}' title"
+    return f"Нотатка '{new_text}' додана до нотатки з титлом '{title}'"
 
 
 # Ця функція видаляє нотатки за заголовком
@@ -119,13 +119,13 @@ def remove_note(list_for_notes, title):
     for i in list_for_notes:
         if title in i["title"]:
             list_for_notes.remove(i)
-    return f"The note {title} has been removed."
+    return f"Нотатка {title} видалена."
 
 
 # Пошук за тегом оновлено
 @input_error
 def search_by_tag(list_for_notes, tag):
-    res = "Notes: \n"
+    res = "Нотатки: \n"
     # list_note = loading(file_path)
     for inner_dict in list_for_notes:
         if tag == inner_dict["tag"]:
@@ -141,13 +141,13 @@ def add_tag(list_for_notes, title, tag):
     # list_note = loading(file_path)
     list_for_notes[find_title(list_for_notes, title)]["tag"] = tag
     # saving(list_note)
-    return f'The tag "{tag}" has been added to the note "{title}"'
+    return f'Тег "{tag}" додано до нотатки "{title}"'
 
 
 # Сортування нотаток за часом збереження оновлено
 def sort_notes(list_for_notes):
     # notes = loading(file_path)
-    result = "Sorting by data: \n"
+    result = "Сортування за часом: \n"
     sorted_notes = sorted(list_for_notes, key=lambda x: x["timestamp"])
     for r in sorted_notes:
         result += str(r) + "\n"

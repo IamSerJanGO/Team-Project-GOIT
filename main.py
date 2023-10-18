@@ -3,6 +3,7 @@ from tkinter import simpledialog
 # from tkinter import messagebox
 import tkinter as tk
 from AdressBookLogick import AddressBook, Record, PhoneInvalidFormatError, Phone
+import NotesLogick as nl  # импорт всего модуля, ибо основные функции там не в классе
 
 
 def get_contact_info(info_type):
@@ -72,6 +73,58 @@ class CommandProcessorApp:
             return self.edit_phone_contact()
         elif command == 'find phone':
             return self.find_phone_contact()
+         # Здесь добавила команды для заметок
+        elif command == "add note":
+            return self.add_note()
+        elif command == "search note":
+            return self.search_note()
+        elif command == "edit note":
+            return self.edit_note()
+        elif command == "update note":
+            return self.update_note()
+        elif command == "add tag":
+            return self.add_tag()
+        elif command == "with tag":
+            return self.with_tag()
+        elif command == "sort note":
+            return self.sort_note()
+        elif command == "remove note":
+            return self.remove_note()
+
+    def add_note(self):  # добавляет заметку
+        title = simpledialog.askstring("Добавление заметки", "Введите заголовок:")
+        content = simpledialog.askstring("Добавление заметки", "Введите заметку:")
+        return nl.add_note(notes_book, content, title)
+
+    def search_note(self):  # ищет заметку рандомному слову
+        word = simpledialog.askstring("Поиск заметки", "Введите поисковое слово:")
+        return nl.search_notes(notes_book, word)
+
+    def edit_note(self):  # полностью переписывает заметку, находя ее по заголовку
+        title = simpledialog.askstring("Изменение заметки", "Введите заголовок:")
+        content = simpledialog.askstring("Изменение заметки", "Введите новую заметку:")
+        return nl.edit_note(notes_book, title, content)
+
+    def update_note(self):  # дописывает текст в существующую заметку
+        title = simpledialog.askstring("Дозапись заметки", "Введите заголовок:")
+        content = simpledialog.askstring("Дозапись заметки", "Введите текст:")
+        return nl.add_existing_note(notes_book, title, content)
+
+    def add_tag(self):  # добавляет тэги в существующую заметку
+        title = simpledialog.askstring("Добавление тэга заметки", "Введите заголовок:")
+        tag = simpledialog.askstring("Добавление тэга заметки", "Введите тэг:")
+        return nl.add_tag(notes_book, title, tag)
+
+    def with_tag(self):  # находит заметку по тэгу, пока что не работает, исправим позже
+        tag = simpledialog.askstring("Поиск заметок по тэгу", "Введите тэг:")
+        return nl.search_by_tag(notes_book, tag)
+
+    def sort_note(self):  # сортирует заметки по дате добавления
+        return nl.sort_notes(notes_book)
+
+    def remove_note(self):  # удаляет заметку по ее заголовку
+        title = simpledialog.askstring("Удаление заметки", "Введите заголовок:")
+        return nl.remove_note(notes_book, title)
 
     def find_contact(self):  # Поиск контакта
         contact_name = contact_name_request('Имя')
@@ -284,12 +337,15 @@ class CommandProcessorApp:
     def on_closing(self):
         # Обработчик закрытия окна
         self.address_book.save_to_file('address-book')  # Сохраняем данные в файл
+        nl.send_to_system(self.notes_book, "notes-book")  # Сохраняем данные в файл
         self.app.destroy()
 
 
 if __name__ == "__main__":
     address_book = AddressBook()
+    notes_book = nl.NotesBook()  # добавила создание экземпляра класса заметок
     address_book.load_from_file('address-book')
+    nl.get_from_system(notes_book, "notes-book")  # считывание инфы с файла заметок
     app = tk.Tk()
-    command_processor = CommandProcessorApp(app, address_book)  # Создание экземпляра класса
+    command_processor = CommandProcessorApp(app, address_book, notes_book)  # Создание экземпляра класса
     app.mainloop()  # Запуск графического интерфейса

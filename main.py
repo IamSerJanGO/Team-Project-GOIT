@@ -591,12 +591,26 @@ class CommandProcessorApp:
 
 
 if __name__ == "__main__":
+    import os
+
+    data_folder = "data"
+    if not os.path.exists(data_folder):
+        os.mkdir(data_folder)
+
     address_book = AddressBook()
-    notes_book = nl.NotesBook()  # добавила создание экземпляра класса заметок
-    address_book.load_from_file("address-book")
-    nl.get_from_system(notes_book, "notes-book")  # считывание инфы с файла заметок
+    notes_book = nl.NotesBook()
+    address_book_file = os.path.join(data_folder, "address-book")
+    notes_book_file = os.path.join(data_folder, "notes-book")
+
+    address_book.load_from_file(address_book_file)
+    nl.get_from_system(notes_book, notes_book_file)
+
     app = tk.Tk()
     command_processor = CommandProcessorApp(
         app, address_book, notes_book
-    )  # Создание экземпляра класса
-    app.mainloop()  # Запуск графического интерфейса
+    )
+    app.mainloop()
+
+    # После завершения работы приложения, можно сохранить данные
+    address_book.save_to_file(address_book_file)
+    nl.save_to_system(notes_book, notes_book_file)

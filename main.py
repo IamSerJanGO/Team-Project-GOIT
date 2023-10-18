@@ -74,6 +74,10 @@ class CommandProcessorApp:
             return self.find_phone_contact()
         elif command == 'add email':
             return self.add_email()
+        elif command == 'edit email':
+            return self.edit_email()
+        elif command == 'remove email':
+            return self.remove_email_in_contact()
 
     def find_contact(self):  # Поиск контакта
         contact_name = contact_name_request('Имя')
@@ -106,24 +110,78 @@ class CommandProcessorApp:
         else:
             self.error_label.config(text='Вы не ввели имя контакта.')
 
-    def add_contact(self):  # Добовляем контакт
+    def edit_email(self):
+        user_input = simpledialog.askstring('Ввод данных', 'Введите имя контакта')
+        if user_input:
+            contact = self.address_book.find(user_input)
+            if contact:
+                if contact.emails:
+                    old_email = simpledialog.askstring('Ввод данных', 'Введите старую почту')
+                    if old_email:
+                        new_email = simpledialog.askstring('Ввод данных', 'Введите новую почту')
+                        if new_email:
+                            try:
+                                Email(new_email)
+                                contact.edit_email(old_email, new_email)
+                                return f'Вы изменили номер телефона у контакта {contact.name}: {old_email} -> {new_email}'
+                            except ValueError as e:
+                                self.error_label.config(text=str(e))
+                        else:
+                            self.error_label.config(text='Введите новый почтовый адрес.')
+                    else:
+                        self.error_label.config(text='Введите старый почтовый адрес.')
+                else:
+                    self.error_label.config(text=f'{contact} не имеет почтового адреса')
+            else:
+                self.error_label.config(text=f'Контакт {contact} не найден')
+        else:
+            self.error_label.config(text='Вы не ввели имя контакта.')
+
+    def remove_email_in_contact(self):
+        contact_name = simpledialog.askstring("Удаление почты", "Введите имя контакта:")
+        if contact_name:
+            contact = self.address_book.find(contact_name)
+            if contact:
+                removed_email = simpledialog.askstring("Удаление почты",
+                                                       f"Введите почту для контакта {contact_name}:")
+                try:
+                    contact.remove_email(removed_email)
+                    return f'Вы удалили почту "{removed_email}" для контакта "{contact_name}".'
+                except ValueError as e:
+                    self.error_label.config(text=str(e))
+            else:
+                self.error_label.config(text=f'Контакт с именем {contact_name} не найден.')
+        else:
+            self.error_label.config(text='Введите имя контакта.')
+
+    def add_contact(self):
         contact_name = simpledialog.askstring("Добавление контакта", "Введите имя контакта:")
         contact_phone = simpledialog.askstring("Добавление контакта", "Введите номер контакта:")
 
-        contact_mail = get_contact_info("почту контакта")
-        contact_address = get_contact_info("адрес контакта")
-        contact_birthday = get_contact_info("день рождения контакта")
-
+        # Проверка формата номера телефона
         try:
-            contact = Record(contact_name, contact_phone, email=contact_mail, address=contact_address,
-                             birthday=contact_birthday)
-            self.address_book.add_record(contact)
-        except ValueError:
-            self.error_label.config(text="Invalid phone number.")
-            return
+            phone_instance = Phone(contact_phone)
         except ValueError as e:
             self.error_label.config(text=str(e))
             return
+
+        contact_mail = get_contact_info("почту контакта")
+
+        # Проверка формата email
+        try:
+            email_instance = Email(contact_mail)
+        except ValueError as e:
+            self.error_label.config(text=str(e))
+            return
+
+        contact_address = get_contact_info("адрес контакта")
+        contact_birthday = get_contact_info("день рождения контакта")
+
+        contact = Record(contact_name, phone_instance, email=email_instance, address=contact_address,
+                         birthday=contact_birthday)
+
+        self.address_book.add_record(contact)
+
         self.error_label.config(text="")
         return f'Вы добавили новый контакт: {contact_name} - {contact_phone}'
 

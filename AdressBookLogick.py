@@ -95,7 +95,7 @@ class Record:
     def __init__(self, name, phone, email=None, address=None, birthday=None):
         self.name = Name(name)
         self.phones = [Phone(phone)]
-        self.emails = [] if email is None else [Email(email)]
+        self.emails = [Email(email)] if email else None
         self.address = Address(address) if address else None
         self.birthday = Birthday(birthday) if birthday else None
 

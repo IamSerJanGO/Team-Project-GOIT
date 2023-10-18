@@ -17,9 +17,10 @@ def contact_name_request(name):
 
 
 class CommandProcessorApp:
-    def __init__(self, app, address_book):
+    def __init__(self, app, address_book, notes_book):
         self.app = app
         self.address_book = address_book
+        self.notes_book = notes_book
         self.app.geometry("300x200")
         self.app.configure(bg="#F5F5DC")
         self.app.title("Твой помошник 😊")

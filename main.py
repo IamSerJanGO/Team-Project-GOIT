@@ -406,7 +406,7 @@ class CommandProcessorApp:
                                 # Проверка формата нового номера (вызывает исключение, если формат неверен)
                                 Phone(new_phone)
                                 # Обновление номера у объекта contact
-                                contact.phone.value = new_phone
+                                contact.edit_phone(old_phone,new_phone)
                                 return f"Ви змінили номер телефону у контакту {contact.name}: {old_phone} -> {new_phone}"
                             except ValueError as e:
                                 self.error_label.config(text=str(e))
@@ -591,6 +591,7 @@ class CommandProcessorApp:
 
 if __name__ == "__main__":
     import os
+    import atexit
 
     data_folder = "data"
     if not os.path.exists(data_folder):
@@ -606,8 +607,13 @@ if __name__ == "__main__":
 
     app = tk.Tk()
     command_processor = CommandProcessorApp(app, address_book, notes_book)
-    app.mainloop()
+    app.protocol("WM_DELETE_WINDOW", app.quit)  # Обработчик закрытия окна
 
-    # После завершения работы приложения, можно сохранить данные
-    address_book.save_to_file(address_book_file)
-    nl.save_to_system(notes_book, notes_book_file)
+    # Функция для сохранения данных при закрытии приложения
+    def save_data():
+        address_book.save_to_file(address_book_file)
+        nl.send_to_system(notes_book, notes_book_file)
+
+    atexit.register(save_data)  # Регистрация функции для сохранения данных при выходе
+
+    app.mainloop()

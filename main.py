@@ -111,6 +111,15 @@ class CommandProcessorApp:
         elif command == "show note":
             return self.show_note()
 
+    def input_error(self, func):
+        def inner(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except TypeError as e:
+                self.error_label.config(text=str(e))
+
+        return inner
+
     def show_note(self):  # показывает все заметки
         return nl.show_all_notes(notes_book)
 
@@ -133,6 +142,7 @@ class CommandProcessorApp:
         content = simpledialog.askstring("Дозапись заметки", "Введите текст:")
         return nl.add_existing_note(notes_book, title, content)
 
+    @input_error
     def add_tag(self):  # добавляет тэги в существующую заметку
         title = simpledialog.askstring("Добавление тэга заметки", "Введите заголовок:")
         tag = simpledialog.askstring("Добавление тэга заметки", "Введите тэг:")

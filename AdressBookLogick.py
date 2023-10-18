@@ -262,4 +262,3 @@ if __name__ == "__main__":
     john_record = Record("John", '+380676753412', email='sdf@mail.ua',
                          birthday='2024-02-29')
     john_record.add_phone('+380676753411')
-    print(john_record)

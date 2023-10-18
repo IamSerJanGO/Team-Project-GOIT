@@ -130,12 +130,12 @@ class Record:
         self.emails.append(Email(email))
 
     # Видалення ел.пошти із списка ел.пошт записа, якщо її не знайдено - викликається помилка
-    def remove_email(self, email):
-        for email in self.emails:  # ітеруюся по списку імейлів
-            if email.value == email:  # перевірка, чи є даний імейл тому, який ми шукали
+    def remove_email(self, email_to_remove):
+        for email in self.emails:
+            if email.value == email_to_remove:
                 self.emails.remove(email)
                 return
-        raise ValueError(f"Поштова адреса '{email}' не знайдена")
+        raise ValueError(f"Email '{email_to_remove}' не найден.")
 
     # Редагування ел.пошти, якщо в списку такої немає - викликається помилка
     def edit_email(self, old_email, new_email):
@@ -255,10 +255,10 @@ class AddressBook(UserDict):
         for record in self.data.values():
             if record.birthday:
                 next_birthday = (
-                    datetime.strptime(record.birthday.value, "%Y-%m-%d")
+                    record.birthday.value
                     .date()
-                    .replace(year=today.year)
-                )
+                    .replace(year=today.year))
+
                 if today > next_birthday:
                     next_birthday = next_birthday.replace(year=today.year + 1)
                 if today <= next_birthday <= future_date:

@@ -144,13 +144,15 @@ def send_to_system(list_for_notes, filename):
 
 # Зчитує інфу з файлу
 def get_from_system(list_for_notes, filename):
-   with open(filename, "rb") as f:
-        while True:
-            try:
+    try:
+        with open(filename, "rb") as f:
+            while True:
                 record = load(f)
                 list_for_notes.append(record)
-            except EOFError:
-                break
+    except FileNotFoundError:
+        pass
+    except EOFError:
+        pass
 
 
 # Головна функція

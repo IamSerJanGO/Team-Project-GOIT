@@ -3,12 +3,6 @@ from datetime import datetime, timedelta
 import pickle
 import re
 
-
-# Перш за все, давайте визначимо власну помилку для некоректного формату номеру телефону.
-class PhoneInvalidFormatError(ValueError):
-    pass
-
-
 # Базовий клас Field для представлення поля зі значенням.
 class Field:
     def __init__(self, value):
@@ -38,43 +32,63 @@ class Phone(Field):
     @value.setter
     def value(self, value):
         if (value.startswith('+') and len(value[1:]) == 12 and value[1:].isdigit()) or (
-                value.isdigit() and len(value) in (10, 12)):
+                value[1:].isdigit() and len(value) in (10, 12)):
             self._value = value
         else:
-            raise PhoneInvalidFormatError('Invalid phone format')
+            raise ValueError('Invalid phone format')
 
 
-# Декоратор для перевірки правильності набору мейлу.
-def validate_email(email):
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        raise ValueError("Invalid email format")
-
-
-# Клас Email успадкований від Field і представляє електронну адресу.
+# Клас Email успадкований від Field і представляє електронну адресу, з перевіркою валідності
 class Email(Field):
     def __init__(self, value):
-        validate_email(value)
+        self._value = value
         super().__init__(value)
 
+    @property
+    def value(self):
+        return self._value
 
+    @value.setter
+    def value(self, value):
+        if re.match(r"[A-Za-z][\w.]*@(?:\w+\.)\w{2,}", value):
+            self._value = value
+        else:
+            raise ValueError('Invalid email format')
+
+#клас Birthday для дня народження контакта (з перевіркою валідності)
 class Birthday(Field):
-
     def __init__(self, value):
+        self._value = value
+        super().__init__(value)
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
         try:
-            datetime.strptime(value, "%Y-%m-%d")
+            self._value = datetime.strptime(value, "%Y-%m-%d")
         except ValueError:
             raise ValueError("Invalid date format for Birthday")
-        super().__init__(value)
 
-
+#клас Address для адреси контакта (з перевіркою валідності)
 class Address(Field):
     def __init__(self, value):
+        self._value = value
+        super().__init__(value)
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
         words = value.split()
         if len(words) >= 2 and all(len(word) > 3 for word in words):
-            super().__init__(value)
+            self._value = value
         else:
             raise ValueError('Invalid data format for Address')
-
 
 # Клас Record для представлення контакту в адресній книзі.
 class Record:
@@ -106,20 +120,22 @@ class Record:
 
     # Додавання ел.пошти до списку ел.пошт записа
     def add_email(self, email):
+        if self.emails is None:
+            self.emails = []
         self.emails.append(Email(email))
 
     # Видалення ел.пошти із списка ел.пошт записа, якщо її не знайдено - викликається помилка
     def remove_email(self, email):
-        for e in self.emails:
-            if e.value == email:
-                self.emails.remove(e)
+        for email in self.emails: #ітеруюся по списку імейлів
+            if email.value == email: #перевірка, чи є даний імейл тому, який ми шукали
+                self.emails.remove(email)
                 return
         raise ValueError(f"Email '{email}' not found")
 
     # Редагування ел.пошти, якщо в списку такої немає - викликається помилка
     def edit_email(self, old_email, new_email):
-        for email in self.emails:
-            if email.value == old_email:
+        for email in self.emails: #ітеруюся по списку імейлів
+            if email.value == old_email: #перевірка, чи є даний імейл тому, який ми шукали
                 email.value = new_email
                 return
         raise ValueError(f"Email '{old_email}' not found")
@@ -128,38 +144,38 @@ class Record:
         self.phones.append(Phone(phone))
 
     # Видалення тел. номера із списка номерів записа, якщо його не знайдено - викликається помилка
-    def remove_phone(self, phone):
-        for p in self.phones:
-            if p.value == phone:
-                self.phones.remove(p)
+    def remove_phone(self, user_phone):
+        for phone in self.phones: #ітеруюся по списку телефонів
+            if phone.value == user_phone: #перевірка, чи є даний телефон тому, який ми шукали
+                self.phones.remove(phone)
                 return
-        raise ValueError(f"Phone number '{phone}' not found")
+        raise ValueError(f"Phone number '{user_phone}' not found")
 
     # Редагування тел. номера, якщо його не знайдено - викликається помилка
     def edit_phone(self, old_phone, new_phone):
-        for phone in self.phones:
-            if phone.value == old_phone:
+        for phone in self.phones: #ітеруюся по списку телефонів
+            if phone.value == old_phone:  #перевірка, чи є даний телефон тому, який ми шукали
                 phone.value = new_phone
                 return
         raise ValueError(f"Phone number '{old_phone}' not found")
 
-    def find_phone(self, phone):
+    def find_phone(self, user_phone):
         # Пошук і повернення телефону за його номером.
-        phones_found = [p for p in self.phones if p.value == phone]
+        phones_found = [phone for phone in self.phones if phone.value == user_phone]
         return phones_found[0] if phones_found else None
 
     # Виводить всю інформацію про запис
     def __str__(self):
         attributes = [f"Contact name: {self.name.value}"]
-        phones_str = '; '.join(str(p) for p in self.phones)
+        phones_str = '; '.join(str(phone) for phone in self.phones)
         attributes.append(f"Phones: {phones_str}")
         if self.emails:
-            emails_str = '; '.join(str(e) for e in self.emails)
+            emails_str = '; '.join(str(email) for email in self.emails)
             attributes.append(f"Emails: {emails_str}")
         if self.address:
             attributes.append(f'Address: "{self.address.value}"')
         if self.birthday:
-            attributes.append(f"Birthday: {self.birthday.value}")
+            attributes.append(f"Birthday: {self.birthday.value.date()}")
         return ', '.join(attributes)
 
 
@@ -173,8 +189,6 @@ class AddressBook(UserDict):
         # Пошук і повернення контакту за ім'ям.
         if name in self.data:
             return self.data[name]
-        else:
-            return None
 
     def delete(self, name):
         # Видалення контакту з адресної книги за ім'ям.
@@ -182,11 +196,11 @@ class AddressBook(UserDict):
             del self.data[name]
             return f'{name}'
 
-    # def find_contact_with_phone(self, phone):
-    #     for contact in self.data.values():
-    #         if contact.find_phone(phone):
-    #             return contact
-    #     return None
+    def find_contact_with_phone(self, phone):
+        for contact in self.data.values():
+            if contact.find_phone(phone):
+                return contact
+        return None
 
     def __iter__(self):
         self.current_record = 0
@@ -202,14 +216,14 @@ class AddressBook(UserDict):
             raise StopIteration
 
     def search(self, query):
-        results = []
+        matches_found = []
         for record in self.data.values():
             if (
                     query.lower() in record.name.value.lower() or
                     any(query.lower() in phone.value for phone in record.phones)
             ):
-                results.append(record)
-        return results
+                matches_found.append(record)
+        return matches_found
 
     def save_to_file(self, filename):
         with open(filename, 'wb') as file:
@@ -245,16 +259,7 @@ class AddressBook(UserDict):
 if __name__ == "__main__":
     # Створення адресної книги під час запуску скрипта.
     address_book = AddressBook()
-    john_record = Record("John", '+380676757690', email='john@gmail.com', address='Kakaya Street',
-                         birthday='2020-10-25')
-    john_record.add_email('john222@gmail.com')
-    for i in john_record.emails:
-        print(i)
-    john_record.add_phone("+380676757690")
-    john_record.add_phone("+378886230216")
-    address_book.add_record(john_record)
-    jane_record = Record("Jane", '+380676757690')
-    jane_record.add_phone("+378886230216")
-    address_book.add_record(jane_record)
-    address_book.days_to_birthday(10)
+    john_record = Record("John", '+380676753412', email='sdf@mail.ua',
+                         birthday='2024-02-29')
+    john_record.add_phone('+380676753411')
     print(john_record)

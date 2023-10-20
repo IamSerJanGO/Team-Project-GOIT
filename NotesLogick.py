@@ -41,6 +41,7 @@ def save_note(list_for_notes, note: Notes):
 def add_note(list_for_notes, node, title):
     new_note = Notes(node, title)
     save_note(list_for_notes, new_note)
+    return f'Заголовок:{title}\n Текст нотатки: {node}'
 
 
 # Знаходить нотатки за рандомними словами

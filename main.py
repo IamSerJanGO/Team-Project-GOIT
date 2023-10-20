@@ -3,7 +3,7 @@ from tkinter import simpledialog
 
 # from tkinter import messagebox
 import tkinter as tk
-from AdressBookLogick import AddressBook, Record, Phone, Email
+from AdressBookLogick import AddressBook, Record, Phone, Email, Name
 import NotesLogick as nl  # импорт всего модуля, ибо основные функции там не в классе
 
 
@@ -185,7 +185,14 @@ class CommandProcessorApp:
 
     def add_note(self):  # добавляет заметку
         title = simpledialog.askstring("Додавання нотатку", "Введіть заголовок:")
+        if not title:
+            self.error_label.config(text='Ви не ввели данні')
+            return
         content = simpledialog.askstring("Додавання нотатку", "Введіть нотатку:")
+        if not title:
+            self.error_label.config(text='Ви не ввели данні')
+            return
+        self.error_label.config(text='')
         return nl.add_note(notes_book, content, title)
 
     def search_note(self):  # ищет заметку рандомному слову
@@ -318,6 +325,12 @@ class CommandProcessorApp:
         contact_name = simpledialog.askstring(
             "Додавання контакту", "Введіть ім'я контакту:"
         )
+        try:
+            Name(contact_name)
+        except ValueError as e:
+            self.error_label.config(text=str(e))
+            return
+
         contact_phone = simpledialog.askstring(
             "Додавання контакту", "Введіть номер контакту:"
         )

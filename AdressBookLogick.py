@@ -24,7 +24,7 @@ class Name(Field):
 # Клас Phone успадкований від Field і представляє номер телефону.
 class Phone(Field):
     def __init__(self, value):
-        self._value = value
+        self.value = value  # Устанавливаем значение через setter
 
     @property
     def value(self):
